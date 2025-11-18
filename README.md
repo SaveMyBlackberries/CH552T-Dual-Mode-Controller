@@ -1,444 +1,433 @@
-# CH552T 双模式控制器 - HID Joystick + MIDI Controller
+这是一个忠实于你原版格式的英文 README 文件。我保留了所有的标题、列表、表格和代码块结构，并准确地翻译了技术内容。
 
-**一个板子，两种模式！**  
-通过上电时按键选择，在HID飞行控制器和MIDI控制器之间自由切换。
+-----
 
----
+# CH552T Dual-Mode Controller - HID Joystick + MIDI Controller
 
-## 📋 目录
+**One Board, Two Modes\!**
+Freely switch between HID Flight Controller and MIDI Controller modes by selecting a button combination during power-up.
 
-- [硬件连接](#硬件连接)
-- [功能特性](#功能特性)
-- [模式切换](#模式切换)
-- [HID模式说明](#hid模式说明)
-- [MIDI模式说明](#midi模式说明)
-- [编译烧录](#编译烧录)
-- [使用说明](#使用说明)
-- [故障排查](#故障排查)
+-----
 
----
+## 📋 Table of Contents
 
-## 🔌 硬件连接
+  - [Hardware Connection](https://www.google.com/search?q=%23hardware-connection)
+  - [Features](https://www.google.com/search?q=%23features)
+  - [Mode Switching](https://www.google.com/search?q=%23mode-switching)
+  - [HID Mode Description](https://www.google.com/search?q=%23hid-mode-description)
+  - [MIDI Mode Description](https://www.google.com/search?q=%23midi-mode-description)
+  - [Compilation and Flashing](https://www.google.com/search?q=%23compilation-and-flashing)
+  - [Usage Instructions](https://www.google.com/search?q=%23usage-instructions)
+  - [Troubleshooting](https://www.google.com/search?q=%23troubleshooting)
 
-### 开发板信息
-- **型号**: CH552T SuperMini USB 开发板
-- **芯片**: CH552T (8051内核, USB HID支持)
-- **时钟**: 16MHz 内部振荡器
+-----
 
-### 引脚连接表（统一布局）
+## 🔌 Hardware Connection
 
-| 功能 | 引脚 | ADC通道 | HID模式功能 | MIDI模式功能 |
-|------|------|---------|------------|-------------|
-| **旋钮1/电位器1** | P1.4 | AIN1 | 油门轴 (Z轴) | CC13 (Effect Control 1) |
-| **旋钮2/电位器2** | P1.1 | AIN0 | 反推轴 (Slider) | Pitch Bend (弯音轮) |
-| **按钮1** | P3.1 | - | HID按钮1 / **模式选择** | MIDI音符C4 (60, 中央C) / **模式选择** |
-| **按钮2** | P3.2 | - | HID按钮2 | MIDI音符A4 (69) |
-| **按钮3** | P1.6 | - | HID按钮3 | 功能键(+12半音) |
-| **按钮4** | P1.7 | - | HID按钮4 | 功能键(-12半音) |
-| **LED指示灯** | P3.0 | - | 闪3次快速 | 闪5次慢速 |
+### Development Board Information
 
-**模式选择说明**：
-- **按住按钮1上电** → MIDI模式（LED慢速闪5次）
-- **不按任何按钮上电** → HID模式（LED快速闪3次）
-- **按住按钮3+4上电** → ISP烧录模式（LED快速闪10次）
+  - **Model**: CH552T SuperMini USB Development Board
+  - **Chip**: CH552T (8051 Core, USB HID Support)
+  - **Clock**: 16MHz Internal Oscillator
 
-### 接线说明
+### Pin Connection Table (Unified Layout)
 
-**电位器/旋钮接线：**
+| Function | Pin | ADC Channel | HID Mode Function | MIDI Mode Function |
+|:---------|:----|:------------|:------------------|:-------------------|
+| **Knob 1/Pot 1** | P1.4 | AIN1 | Throttle Axis (Z-Axis) | CC13 (Effect Control 1) |
+| **Knob 2/Pot 2** | P1.1 | AIN0 | Reverse Thrust Axis (Slider) | Pitch Bend |
+| **Button 1** | P3.1 | - | HID Button 1 / **Mode Select** | MIDI Note C4 (60, Middle C) / **Mode Select** |
+| **Button 2** | P3.2 | - | HID Button 2 | MIDI Note A4 (69) |
+| **Button 3** | P1.6 | - | HID Button 3 | Function Key (+12 Semitones) |
+| **Button 4** | P1.7 | - | HID Button 4 | Function Key (-12 Semitones) |
+| **LED Indicator** | P3.0 | - | Fast Flash 3 Times | Slow Flash 5 Times |
+
+**Mode Selection Instructions**:
+
+  - **Hold Button 1 on Power-Up** → MIDI Mode (LED flashes slowly 5 times)
+  - **No Button Pressed on Power-Up** → HID Mode (LED flashes quickly 3 times)
+  - **Hold Button 3 + 4 on Power-Up** → ISP Flashing Mode (LED flashes quickly 10 times)
+
+### Wiring Guide
+
+**Potentiometer/Knob Wiring:**
+
 ```
-旋钮引脚：
+Knob Pins:
 ┌─────────┐
-│  VCC    │ ← 5V或3.3V
-│  信号   │ ← 接P1.1或P1.4
-│  GND    │ ← GND
+│  VCC    │ ← 5V or 3.3V
+│  Signal  │ ← Connect to P1.1 or P1.4
+│  GND    │ ← GND
 └─────────┘
 ```
 
-**按钮接线：**
-- 一端接对应引脚 (P3.1, P3.2, P1.6, P1.7)
-- 另一端接GND
-- 使用内部上拉，低电平有效
+**Button Wiring:**
 
----
+  - One end connects to the corresponding pin (P3.1, P3.2, P1.6, P1.7)
+  - The other end connects to **GND**
+  - Uses internal pull-up, low-level active
 
-## ✨ 功能特性
+-----
 
-### 双模式设计
-- **HID模式**: USB Game Pad (游戏控制器)
-  - 2个模拟轴（Z轴、Slider）
-  - 4个按钮
-  - 100Hz刷新率
-  - 无需驱动，即插即用
-  
-- **MIDI模式**: USB MIDI Controller
-  - CC13控制 (Effect Control 1)
-  - Pitch Bend (弯音轮, -8192到8191)
-  - 2个音符按键 (中央C4和A4) + 2个功能键
-  - 功能键可移调±12半音（一个八度）
-  - ADC校准映射，确保旋钮满行程
+## ✨ Features
 
-### 滤波系统
-- **16次平均滤波**: 降低ADC噪声
-- **50μs采样间隔**: 保证ADC稳定
-- **响应延迟**: <5ms
+### Dual-Mode Design
 
-### LED指示
-- **HID模式**: 启动时快速闪3次
-- **MIDI模式**: 启动时慢速闪5次
-- **运行时**: 按下任何按钮时点亮
+  - **HID Mode**: USB Game Pad (Game Controller)
+      - 2 Analog Axes (Z-Axis, Slider)
+      - 4 Buttons
+      - 100Hz Refresh Rate
+      - Driverless, Plug-and-Play
+     
+  - **MIDI Mode**: USB MIDI Controller
+      - CC13 Control (Effect Control 1)
+      - Pitch Bend (-8192 to 8191)
+      - 2 Note Keys (Middle C4 and A4) + 2 Function Keys
+      - Function keys for Transposing $\pm 12$ semitones (One Octave)
+      - ADC Calibration Mapping for full knob travel
 
----
+### Filtering System
 
-## 🔄 模式切换
+  - **16x Average Filtering**: Reduces ADC noise
+  - **$50\mu s$ Sampling Interval**: Ensures ADC stability
+  - **Response Latency**: $<5ms$
 
-### 切换方法（上电按键检测）
+### LED Indicator
 
-```
-不按任何按钮 + 上电 → HID模式
-┌────────────────────────────────┐
-│ 1. 确保所有按钮都松开          │
-│ 2. 插入USB线                   │
-│ 3. LED快速闪3次 → HID模式生效  │
-└────────────────────────────────┘
+  - **HID Mode**: Flashes quickly 3 times on startup
+  - **MIDI Mode**: Flashes slowly 5 times on startup
+  - **During Operation**: Lights up when any button is pressed
 
-按住按钮1 + 上电 → MIDI模式
-┌────────────────────────────────┐
-│ 1. 按住按钮1(P3.1)             │
-│ 2. 插入USB线                   │
-│ 3. 等待LED慢速闪5次            │
-│ 4. 松开按钮1 → MIDI模式生效    │
-└────────────────────────────────┘
+-----
 
-按住按钮3+4 + 上电 → ISP烧录模式
-┌────────────────────────────────┐
-│ 1. 同时按住按钮3(P1.6)+按钮4(P1.7)│
-│ 2. 插入USB线                   │
-│ 3. 等待LED快速闪10次           │
-│ 4. 松开按钮 → 进入ISP模式      │
-└────────────────────────────────┘
-```
+## 🔄 Mode Switching
 
-**注意**: 模式在上电时确定，运行中无法切换。如需更换模式，请拔掉USB重新上电。
-
----
-
-## 🎮 HID模式说明
-
-### 功能映射
-
-| 硬件 | HID功能 | 用途示例 |
-|------|---------|---------|
-| 旋钮1 (P1.4) | Z轴 | Microsoft Flight Simulator - 油门 |
-| 旋钮2 (P1.1) | Slider轴 | Microsoft Flight Simulator - 反推 |
-| 按钮1 (P3.1) | Button 1 | AT Disengage (自动油门断开) |
-| 按钮2 (P3.2) | Button 2 | TO/GA (起飞/复飞) |
-| 按钮3 (P1.6) | Button 3 | 自定义功能 |
-| 按钮4 (P1.7) | Button 4 | 自定义功能 |
-
-### Windows配置
-
-1. **打开控制面板**
-   - 按 `Win+R`，输入 `joy.cpl`，回车
-
-2. **校准轴**
-   - 选择设备 → 属性 → 设置 → 校准
-   - 分别校准 **Z轴** 和 **Slider轴**
-
-3. **测试**
-   - 测试标签页查看轴和按钮响应
-
----
-
-## 🎹 MIDI模式说明
-
-### 功能映射
-
-| 硬件 | MIDI功能 | MIDI消息 | 说明 |
-|------|---------|---------|------|
-| 旋钮1 (P1.4) | CC13 | Control Change 13 | Effect Control 1 (范围0-127, 已校准满行程) |
-| 旋钮2 (P1.1) | Pitch Bend | Pitch Bend | 弯音轮 (-8192到8191, 已校准满行程) |
-| 按钮1 (P3.1) | 音符C4 | Note 60 | 单独按：C4 (中央C)<br>按钮3+按钮1：C5 (72)<br>按钮4+按钮1：C3 (48) |
-| 按钮2 (P3.2) | 音符A4 | Note 69 | 单独按：A4<br>按钮3+按钮2：A5 (81)<br>按钮4+按钮2：A3 (57) |
-| 按钮3 (P1.6) | 功能键 | - | 按住时：音符+12半音（高八度） |
-| 按钮4 (P1.7) | 功能键 | - | 按住时：音符-12半音（低八度） |
-
-### 功能键逻辑
+### Switching Method (Power-Up Button Detection)
 
 ```
-按钮1单独按下 → 发送 Note C4 (60, 中央C)
-按钮3+按钮1   → 发送 Note C5 (72) [+12半音]
-按钮4+按钮1   → 发送 Note C3 (48) [-12半音]
+No Button Pressed + Power-Up → HID Mode
+┌────────────────────────────────────────┐
+│ 1. Ensure all buttons are released       │
+│ 2. Plug in the USB cable                 │
+│ 3. LED flashes quickly 3 times → HID Mode Active  │
+└────────────────────────────────────────┘
 
-按钮2单独按下 → 发送 Note A4 (69)
-按钮3+按钮2   → 发送 Note A5 (81) [+12半音]
-按钮4+按钮2   → 发送 Note A3 (57) [-12半音]
+Hold Button 1 + Power-Up → MIDI Mode
+┌────────────────────────────────────────┐
+│ 1. Hold Button 1 (P3.1)                │
+│ 2. Plug in the USB cable                 │
+│ 3. Wait for LED to flash slowly 5 times  │
+│ 4. Release Button 1 → MIDI Mode Active   │
+└────────────────────────────────────────┘
+
+Hold Button 3+4 + Power-Up → ISP Flashing Mode
+┌────────────────────────────────────────┐
+│ 1. Hold both Button 3 (P1.6) + Button 4 (P1.7)│
+│ 2. Plug in the USB cable                 │
+│ 3. Wait for LED to flash quickly 10 times│
+│ 4. Release buttons → Enters ISP Mode     │
+└────────────────────────────────────────┘
 ```
 
-### ADC校准技术说明
+**Note**: The mode is determined at power-up and cannot be changed during runtime. To switch modes, unplug the USB and re-power the device.
 
-由于电位器的物理特性，实际ADC读数范围通常无法达到理论上的0-255全范围。
+-----
 
-**本项目的实测数据**：
-- **实际ADC范围**: 0-172（而不是0-255）
-- **ADC中心值**: 86
-- **对应MIDI范围**: CC 0-86（未校准时）
+## 🎮 HID Mode Description
 
-**校准映射算法**：
+### Function Mapping
+
+| Hardware | HID Function | Example Use Case |
+|:---------|:-------------|:-----------------|
+| Knob 1 (P1.4) | Z-Axis | Microsoft Flight Simulator - Throttle |
+| Knob 2 (P1.1) | Slider Axis | Microsoft Flight Simulator - Reverse Thrust |
+| Button 1 (P3.1) | Button 1 | AT Disengage (Autothrottle Disconnect) |
+| Button 2 (P3.2) | Button 2 | TO/GA (Takeoff/Go-Around) |
+| Button 3 (P1.6) | Button 3 | Custom Function |
+| Button 4 (P1.7) | Button 4 | Custom Function |
+
+### Windows Configuration
+
+1.  **Open Control Panel**
+       - Press `Win+R`, type `joy.cpl`, press Enter
+
+2.  **Calibrate Axes**
+       - Select Device → Properties → Settings → Calibrate
+       - Calibrate the **Z-Axis** and **Slider Axis** separately
+
+3.  **Test**
+       - Check axis and button responses in the Test tab
+
+-----
+
+## 🎹 MIDI Mode Description
+
+### Function Mapping
+
+| Hardware | MIDI Function | MIDI Message | Description |
+|:---------|:--------------|:-------------|:------------|
+| Knob 1 (P1.4) | CC13 | Control Change 13 | Effect Control 1 (Range 0-127, Calibrated for full travel) |
+| Knob 2 (P1.1) | Pitch Bend | Pitch Bend | Range (-8192 to 8191, Calibrated for full travel) |
+| Button 1 (P3.1) | Note C4 | Note 60 | Press alone: C4 (Middle C)<br>Button 3 + Button 1: C5 (72)<br>Button 4 + Button 1: C3 (48) |
+| Button 2 (P3.2) | Note A4 | Note 69 | Press alone: A4<br>Button 3 + Button 2: A5 (81)<br>Button 4 + Button 2: A3 (57) |
+| Button 3 (P1.6) | Function Key | - | While held: Transposes notes $+12$ semitones (One Octave Up) |
+| Button 4 (P1.7) | Function Key | - | While held: Transposes notes $-12$ semitones (One Octave Down) |
+
+### Function Key Logic
+
+```
+Button 1 Pressed Alone    → Send Note C4 (60, Middle C)
+Button 3 + Button 1       → Send Note C5 (72) [+12 Semitones]
+Button 4 + Button 1       → Send Note C3 (48) [-12 Semitones]
+
+Button 2 Pressed Alone    → Send Note A4 (69)
+Button 3 + Button 2       → Send Note A5 (81) [+12 Semitones]
+Button 4 + Button 2       → Send Note A3 (57) [-12 Semitones]
+```
+
+### ADC Calibration Technical Details
+
+Due to the physical characteristics of the potentiometers, the actual ADC reading range often does not reach the full theoretical 0-255 range.
+
+**Measured Data for this Project**:
+
+  - **Actual ADC Range**: 0-172 (instead of 0-255)
+  - **ADC Center Value**: 86
+  - **Corresponding MIDI Range**: CC 0-86 (Uncalibrated)
+
+**Calibration Mapping Algorithm**:
 
 ```c
-// CC13 映射（0-127满行程）
+// CC13 Mapping (0-127 Full Travel)
 CC13 = adc_value * 127 / 172
 
-// Pitch Bend 映射（-8192到+8191满行程）
+// Pitch Bend Mapping (-8192 to +8191 Full Travel)
 Pitch Bend = (adc_value - 86) * 8192 / 86
 ```
 
-**校准效果**：
-- ✅ CC13完整行程：0 → 127
-- ✅ Pitch Bend完整行程：-8192 → +8191
-- ✅ Pitch Bend精确居中：ADC=86 → 0
+**Calibration Effect**:
 
-**注意**：如果您使用不同规格的电位器，可能需要修改 `dual_mode_controller.c` 中的映射参数。
+  - ✅ CC13 Full Travel: 0 $\rightarrow$ 127
+  - ✅ Pitch Bend Full Travel: -8192 $\rightarrow$ +8191
+  - ✅ Pitch Bend Exact Center: ADC=86 $\rightarrow$ 0
 
----
+**Note**: If you use potentiometers with different specifications, you may need to modify the mapping parameters in `dual_mode_controller.c`.
 
-### DAW软件配置
+-----
+
+### DAW Software Configuration
 
 #### Ableton Live
-1. **Preferences** → **MIDI**
-2. 在输入设备中启用 "Dual Mode Controller"
-3. Track → In From → "Dual Mode Controller"
+
+1.  **Preferences** → **MIDI**
+2.  Enable "Dual Mode Controller" in the Input Devices section
+3.  Set Track → In From → "Dual Mode Controller"
 
 #### FL Studio
-1. **Options** → **MIDI Settings**
-2. 在Input中选择 "Dual Mode Controller"
-3. 启用 "Enable"
+
+1.  **Options** → **MIDI Settings**
+2.  Select "Dual Mode Controller" under Input
+3.  Enable "Enable"
 
 #### Cubase
-1. **Studio** → **Studio Setup** → **MIDI Port Setup**
-2. 添加 "Dual Mode Controller"
 
----
+1.  **Studio** → **Studio Setup** → **MIDI Port Setup**
+2.  Add "Dual Mode Controller"
 
-## 🔨 编译烧录
+-----
 
-### 编译环境要求
-- **编译器**: SDCC (Small Device C Compiler) 4.x
-- **工具**: packihx (SDCC自带)
-- **系统**: Windows (CMD或PowerShell)
+## 🔨 Compilation and Flashing
 
-### 编译步骤
+### Compilation Environment Requirements
 
-1. **安装SDCC**
-   - 下载: https://sdcc.sourceforge.net/
-   - 确保 `sdcc` 在PATH中
+  - **Compiler**: SDCC (Small Device C Compiler) 4.x
+  - **Tool**: `packihx` (Included with SDCC)
+  - **System**: Windows (CMD or PowerShell)
 
-2. **编译**
-   ```cmd
-   cd MIDI_Joystick
-   compile.bat
-   ```
+### Compilation Steps
 
-3. **编译输出**
-   ```
-   ===================================
-   Dual Mode Controller Build Script
-   ===================================
-   
-   [1/4] Cleaning old files...
-   [2/4] Compiling source files...
-   [3/4] Linking...
-   [4/4] Converting to HEX format...
-   
-   ===================================
-   Build successful!
-   Output file: dual_mode_controller.hex
-   ===================================
-   ```
+1.  **Install SDCC**
+       - Download: [https://sdcc.sourceforge.net/](https://sdcc.sourceforge.net/)
+       - Ensure `sdcc` is in your system's PATH
 
-### 烧录步骤
+2.  **Compile**
+       `cmd    cd MIDI_Joystick    compile.bat    `
 
-#### 方法1: 软件进入ISP模式 ⭐ (推荐，无需拆盒子)
+3.  **Compilation Output**
+       `     ===================================    Dual Mode Controller Build Script    ===================================        [1/4] Cleaning old files...    [2/4] Compiling source files...    [3/4] Linking...    [4/4] Converting to HEX format...        ===================================    Build successful!    Output file: dual_mode_controller.hex    ===================================     `
 
-1. **同时按住按钮3和按钮4** (P1.6 + P1.7)
-2. **保持按住，插入USB线**
-3. **等待LED快速闪烁10次** (表示进入ISP模式)
-4. **松开按钮**
-5. 设备管理器应显示 "USB Module"
+### Flashing Steps
 
-#### 方法2: 硬件按键进入ISP模式
+#### Method 1: Software Entry to ISP Mode ⭐ (Recommended, no need to open the case)
 
-1. **按住 P36 按钮** (板载按钮)
-2. **插入USB线**
-3. **松开 P36**
-4. 设备管理器应显示 "USB Module"
+1.  **Hold Button 3 and Button 4 simultaneously** (P1.6 + P1.7)
+2.  **Keep holding, plug in the USB cable**
+3.  **Wait for the LED to flash quickly 10 times** (Indicates ISP Mode entry)
+4.  **Release buttons**
+5.  Device Manager should show "USB Module"
 
-#### 烧录固件
+#### Method 2: Hardware Button Entry to ISP Mode
 
-1. **使用WCH ISP Tool烧录**
-   - 打开 WCH ISP Tool
-   - 芯片: CH552
-   - 文件: `dual_mode_controller.hex`
-   - 点击"下载"
+1.  **Hold the P36 button** (On-board button)
+2.  **Plug in the USB cable**
+3.  **Release P36**
+4.  Device Manager should show "USB Module"
 
-2. **验证**
-   - 拔掉USB重新插入
-   - 不按任何按钮：LED快速闪3次（HID模式）
-   - 按住按钮1：LED慢速闪5次（MIDI模式）
-   - 按住按钮3+4：LED快速闪10次（ISP模式）
+#### Flashing the Firmware
 
----
+1.  **Use WCH ISP Tool to Flash**
+       - Open WCH ISP Tool
+       - Chip: CH552
+       - File: `dual_mode_controller.hex`
+       - Click "Download"
 
-## 📖 使用说明
+2.  **Verification**
+       - Unplug and re-plug the USB
+       - No buttons pressed: LED flashes quickly 3 times (HID Mode)
+       - Hold Button 1: LED flashes slowly 5 times (MIDI Mode)
+       - Hold Button 3+4: LED flashes quickly 10 times (ISP Mode)
 
-### HID模式使用
+-----
 
-1. **不按任何按钮上电** → 进入HID模式
-2. LED快速闪3次确认
-3. Windows自动识别为游戏控制器
-4. 打开 `joy.cpl` 校准和测试
-5. 在游戏/模拟器中配置轴和按钮
+## 📖 Usage Instructions
 
-### MIDI模式使用
+### HID Mode Usage
 
-1. **按住按钮1上电** → 进入MIDI模式
-2. LED慢速闪5次确认
-3. Windows识别为MIDI设备
-4. **方法A: 使用测试工具 (推荐)** ⭐
-   ```bash
-   # 安装依赖
-   pip install -r requirements.txt
-   
-   # 启动测试工具
-   python midi_tester.py
-   ```
-   - 自动识别设备
-   - 实时显示CC13和Pitch Bend
-   - 显示音符按键
-   - 播放Beep音
-   - 详细的MIDI日志
-   
-   **详细说明请查看**: `MIDI_TESTER_README.md`
+1.  **Power up with no buttons pressed** $\rightarrow$ Enters HID Mode
+2.  LED flashes quickly 3 times for confirmation
+3.  Windows automatically recognizes it as a game controller
+4.  Open `joy.cpl` for calibration and testing
+5.  Configure axes and buttons in your game/simulator
 
-5. **方法B: 使用DAW软件**
-   - 打开DAW软件（如Ableton Live）
-   - 在MIDI设置中启用设备
-   - 使用旋钮控制CC和Pitch Bend
-   - 使用按钮演奏音符
+### MIDI Mode Usage
 
----
+1.  **Hold Button 1 on power-up** $\rightarrow$ Enters MIDI Mode
 
-## 🔧 故障排查
+2.  LED flashes slowly 5 times for confirmation
 
-### 模式切换问题
+3.  Windows recognizes it as a MIDI device
 
-| 问题 | 原因 | 解决方法 |
-|------|------|---------|
-| LED不闪烁 | 固件未烧录 | 检查烧录是否成功 |
-| 模式无法切换 | 按钮1接线错误 | 检查P3.1连接，确保上拉 |
-| LED闪烁次数不对 | 按键状态检测错误 | 重新上电，确保按键时机正确 |
+4.  **Method A: Use the Test Tool (Recommended)** ⭐
+       `bash    # Install dependencies    pip install -r requirements.txt        # Start the test tool    python midi_tester.py    `
+       - Automatic device detection
+       - Real-time display of CC13 and Pitch Bend
+       - Displays note key presses
+       - Plays Beep sounds
+       - Detailed MIDI log
+       
+       **For detailed instructions, see**: `MIDI_TESTER_README.md`
 
-### HID模式问题
+5.  **Method B: Use DAW Software**
+       - Open your DAW (e.g., Ableton Live)
+       - Enable the device in the MIDI settings
+       - Use the knobs to control CC and Pitch Bend
+       - Use the buttons to play notes
 
-| 问题 | 原因 | 解决方法 |
-|------|------|---------|
-| 轴不响应 | ADC引脚未连接 | 检查P1.1和P1.4接线 |
-| 按钮不工作 | 引脚错误 | 检查P3.1, P3.2, P1.6, P1.7 |
-| 设备未识别 | 驱动问题 | 重新插拔USB |
+-----
 
-### MIDI模式问题
+## 🔧 Troubleshooting
 
-| 问题 | 原因 | 解决方法 |
-|------|------|---------|
-| DAW无响应 | 设备未启用 | 在DAW的MIDI设置中启用 |
-| 音符不发声 | 力度为0 | 检查代码中MIDI_VELOCITY设置 |
-| CC值不变化 | 阈值过大 | 调整ADC阈值 |
+### Mode Switching Issues
 
----
+| Issue | Cause | Solution |
+|:------|:------|:----------|
+| LED does not flash | Firmware not flashed | Check if flashing was successful |
+| Cannot switch modes | Button 1 wiring error | Check P3.1 connection and ensure pull-up is working |
+| LED flashes incorrect number of times | Incorrect button state detection | Re-power, ensure correct button timing |
 
-## 🚀 技术细节
+### HID Mode Issues
 
-### 代码结构
+| Issue | Cause | Solution |
+|:------|:------|:----------|
+| Axes unresponsive | ADC pins not connected | Check P1.1 and P1.4 wiring |
+| Buttons not working | Incorrect pins | Check P3.1, P3.2, P1.6, P1.7 |
+| Device not recognized | Driver issue | Re-plug the USB |
+
+### MIDI Mode Issues
+
+| Issue | Cause | Solution |
+|:------|:------|:----------|
+| DAW unresponsive | Device not enabled | Enable the device in the DAW's MIDI settings |
+| Notes not sounding | Velocity is 0 | Check MIDI\_VELOCITY setting in code |
+| CC value not changing | Threshold too large | Adjust ADC threshold |
+
+-----
+
+## 🚀 Technical Details
+
+### Code Structure
 
 ```
 MIDI_Joystick/
-├── dual_mode_controller.c   # 主程序（双模式逻辑）
-├── compile.bat               # 编译脚本
+├── dual_mode_controller.c   # Main Program (Dual-mode logic)
+├── compile.bat               # Compilation Script
 ├── src/
-│   ├── config.h              # 配置文件（引脚、模式定义）
-│   ├── usb_descr.c           # USB描述符（4按钮HID）
-│   ├── usb_composite_simple.c # HID函数
-│   ├── usb_hid.c             # HID底层
-│   ├── usb_handler.c         # USB事件处理
-│   ├── delay.c               # 延时函数
-│   ├── ch554.h               # 芯片寄存器定义
-│   ├── gpio.h                # GPIO宏
-│   └── system.h              # 系统函数
-└── README.md                 # 本文档
+│   ├── config.h              # Configuration file (Pins, mode definitions)
+│   ├── usb_descr.c           # USB Descriptor (4-button HID)
+│   ├── usb_composite_simple.c # HID functions
+│   ├── usb_hid.c             # HID low-level
+│   ├── usb_handler.c         # USB event handling
+│   ├── delay.c               # Delay functions
+│   ├── ch554.h               # Chip Register definitions
+│   ├── gpio.h                # GPIO macros
+│   └── system.h              # System functions
+└── README.md                 # This document
 ```
 
-### 主要功能模块
+### Main Function Modules
 
 ```c
-// 模式检测
-uint8_t detect_mode(void)      // 上电时检测P3.4状态
+// Mode Detection
+uint8_t detect_mode(void)      // Detects P3.4 status on power-up
 
-// LED指示
-void indicate_mode(uint8_t mode) // 根据模式闪烁LED
+// LED Indication
+void indicate_mode(uint8_t mode) // Flashes LED according to mode
 
-// HID模式主循环
-void run_hid_mode(void)        // 2旋钮+4按钮 → USB HID
+// HID Mode Main Loop
+void run_hid_mode(void)        // 2 Knobs + 4 Buttons → USB HID
 
-// MIDI模式主循环
-void run_midi_mode(void)       // CC13+PitchBend+音符+功能键 → USB MIDI
+// MIDI Mode Main Loop
+void run_midi_mode(void)       // CC13 + PitchBend + Notes + Function Keys → USB MIDI
 ```
 
----
+-----
 
-## 📝 版本历史
+## 📝 Version History
 
 ### v1.0 (2025-11-18)
-- ✅ 初始版本
-- ✅ **双模式支持**：HID游戏控制器 + USB MIDI控制器
-- ✅ **HID模式**：2旋钮（Z轴/Slider）+ 4按钮
-- ✅ **MIDI模式**：
-  - CC13 (Effect Control 1) - 完整行程 0-127
-  - Pitch Bend (弯音轮) - 完整行程 -8192到+8191
-  - 2个音符按键（C4/A4，中央C组）
-  - 2个功能键（八度移调±12半音）
-  - ADC校准算法，解决电位器行程不满问题
-- ✅ **模式切换**：
-  - 按钮1上电 → MIDI模式
-  - 不按按钮上电 → HID模式
-  - 按钮3+4上电 → ISP烧录模式
-- ✅ **性能优化**：
-  - 16次平均滤波降噪
-  - 100Hz刷新率
-  - <5ms响应延迟
-- ✅ **开发工具**：Python MIDI测试工具
-- ✅ **跨平台支持**：Windows/macOS/Linux
 
----
+  - ✅ Initial Release
+  - ✅ **Dual-Mode Support**: HID Game Controller + USB MIDI Controller
+  - ✅ **HID Mode**: 2 Knobs (Z-Axis/Slider) + 4 Buttons
+  - ✅ **MIDI Mode**:
+      - CC13 (Effect Control 1) - Full travel 0-127
+      - Pitch Bend - Full travel -8192 to +8191
+      - 2 Note Keys (C4/A4, Middle C group)
+      - 2 Function Keys (Octave Transpose $\pm 12$ Semitones)
+      - ADC Calibration Algorithm to solve incomplete potentiometer travel
+  - ✅ **Mode Switching**:
+      - Button 1 on Power-Up $\rightarrow$ MIDI Mode
+      - No Button on Power-Up $\rightarrow$ HID Mode
+      - Button 3+4 on Power-Up $\rightarrow$ ISP Flashing Mode
+  - ✅ **Performance Optimization**:
+      - 16x Average Filtering for noise reduction
+      - 100Hz Refresh Rate
+      - $<5ms$ Response Latency
+  - ✅ **Development Tool**: Python MIDI Test Tool
+  - ✅ **Cross-Platform Support**: Windows/macOS/Linux
 
-## 👥 贡献者
+-----
 
-- **硬件设计**: DIY
-- **固件开发**: 基于FlightController_HID项目扩展
-- **测试验证**: Windows 11 + MSFS 2024 / Ableton Live
+## 📄 License
 
----
+This project is based on the MacroPad Plus project and follows its original license.
 
-## 📄 许可证
+-----
 
-本项目基于 MacroPad Plus 项目，遵循其原始许可证。
+**Project Completion Date**: 2025-11-18  
+**Development Board**: CH552T SuperMini USB  
+**Supported Platforms**: Windows 10/11
 
----
+-----
 
-**项目完成日期**: 2025-11-18  
-**开发板**: CH552T SuperMini USB  
-**支持平台**: Windows 10/11
-
----
-
-*Happy Making! 🎉*
-
+*Happy Making\! 🎉*
