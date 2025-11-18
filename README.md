@@ -1,7 +1,3 @@
-这是一个忠实于你原版格式的英文 README 文件。我保留了所有的标题、列表、表格和代码块结构，并准确地翻译了技术内容。
-
------
-
 # CH552T Dual-Mode Controller - HID Joystick + MIDI Controller
 
 **One Board, Two Modes\!**
